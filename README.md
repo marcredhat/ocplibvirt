@@ -15,6 +15,10 @@ ssh user@vb1237.mydomain.com
 CentOS Linux release 8.2.2004 (Core)
 ```
 
+```
+dnf update -y
+```
+
 ## Ensure you have enough space in root partition
 
 ```
