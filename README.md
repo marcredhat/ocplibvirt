@@ -1,15 +1,23 @@
 
+# Install OpenShift 4 on libvirt
 
 
-description: Dell PowerEdge R440, Xeon(R) Silver 4114 CPU @ 2.20GHz, 20 cores, 128GB Ram, 4-2TB disks
+Dell PowerEdge R440, Xeon(R) Silver 4114 CPU @ 2.20GHz, 20 cores, 128GB Ram, 4-2TB disks
+
+
+```
 ssh mchisinevski@vb1237.mydomain.com
+```
 
 
+```
 [root@vb1237 mchisinevski]# cat /etc/centos-release
 CentOS Linux release 8.2.2004 (Core)
+```
 
+## Ensure you have enough space in root partition
 
-
+```
 [mchisinevski@vb1237 ~]$ cd /
 [mchisinevski@vb1237 /]$ exec sudo su
 [root@vb1237 /]# fuser -kim  /dev/cl_vb1237/home
@@ -33,38 +41,51 @@ Do you really want to remove active logical volume cl_vb1237/home? [y/n]: y
            =                       sectsz=512   sunit=0 blks, lazy-count=1
   realtime =none                   extsz=4096   blocks=0, rtextents=0
   data blocks changed from 13107200 to 487066624
+```
 
 
 Append below lines in /etc/sysctl.conf:
 
+```
 net.ipv6.conf.all.disable_ipv6 = 1
 net.ipv6.conf.default.disable_ipv6 = 1
+```
 
+```
 sysctl -p
+```
 
 Add the AddressFamily line to sshd_config :
 
+```
 # vi /etc/ssh/sshd_config
 ....
 AddressFamily inet
 ....
+```
+
+
 Restart sshd for changes to get effect :
 
-# systemctl restart sshd
+```
+systemctl restart sshd
+```
 
+Copy the pull secret from https://cloud.redhat.com/openshift/install/pull-secret to /root/pull-secret
 
-copy the pull secret from https://cloud.redhat.com/openshift/install/pull-secret to /root/pull-secret
-
+```
 yum update libgcrypt
+```
 (because https://bugzilla.redhat.com/show_bug.cgi?id=1925029)
 
+```
 dnf -y module install virt
 dnf -y install zip podman buildah skopeo libvirt*  bind-utils wget tar gcc python3-devel python3  xauth virt-install virt-viewer virt-manager libguestfs-tools-c libguestfs-tools tmux httpd-tools git x3270-x11 nc net-tools
 systemctl start libvirtd.service
 systemctl enable libvirtd
+```
 
-
-
+```
 systemctl status libvirtd
 [root@vb1237 mchisinevski]# systemctl status libvirtd
 ● libvirtd.service - Virtualization daemon
@@ -90,9 +111,11 @@ Nov 18 10:25:54 vb1237.mydomain.com dnsmasq[33341]: using nameserver 172.21.64.1
 Nov 18 10:25:54 vb1237.mydomain.com dnsmasq[33341]: read /etc/hosts - 2 addresses
 Nov 18 10:25:54 vb1237.mydomain.com dnsmasq[33341]: read /var/lib/libvirt/dnsmasq/default.addnhosts - 0 addresses
 Nov 18 10:25:54 vb1237.mydomain.com dnsmasq-dhcp[33341]: read /var/lib/libvirt/dnsmasq/default.hostsfile
-
+```
 
 As root, setup a separate dnsmasq server on the host:
+
+```
 fuser -k 53/tcp
 dnf  -y install dnsmasq
 for x in $(virsh net-list --name); do virsh net-info $x | awk '/Bridge:/{print "except-interface="$2}'; done > /etc/dnsmasq.d/except-interfaces.conf
@@ -119,28 +142,37 @@ Nov 18 10:27:01 vb1237.mydomain.com dnsmasq[33481]: using nameserver 172.17.64.1
 Nov 18 10:27:01 vb1237.mydomain.com dnsmasq[33481]: ignoring nameserver 127.0.0.1 - local interface
 Nov 18 10:27:01 vb1237.mydomain.com dnsmasq[33481]: using nameserver 172.21.64.15#53
 Nov 18 10:27:01 vb1237.mydomain.com dnsmasq[33481]: read /etc/hosts - 2 addresses
+```
 
 
+```
 git clone https://github.com/kxr/ocp4_setup_upi_kvm.git
 cd ocp4_setup_upi_kvm/
+```
 
-
+```
 [root@vb1237 ocp4_setup_upi_kvm]# vim .defaults.sh
+```
+
 Set
+```
 # -z, --dns-dir DIR
 export DNS_DIR="/etc/dnsmasq.d"
+```
 
-Adjust default as needed (no of master, no of workers, CPU, mem)
+Adjust defaults as needed (no of master, no of workers, CPU, mem)
 
 
-
+```
 [root@vb1237 ocp4_setup_upi_kvm]# systemctl stop NetworkManager
 [root@vb1237 ocp4_setup_upi_kvm]# systemctl disable NetworkManager
 
 cat /etc/resolv.conf
 nameserver 127.0.0.1
+nameserver 8.8.8.8
+```
 
-
+```
 ./ocp4_setup_upi_kvm.sh --ocp-version 4.7.stable -y
-
+```
 
