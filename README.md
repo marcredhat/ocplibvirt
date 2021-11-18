@@ -19,6 +19,12 @@ CentOS Linux release 8.2.2004 (Core)
 dnf update -y
 ```
 
+```
+dnf -y module install virt
+dnf -y install zip podman buildah skopeo libvirt*  bind-utils wget tar gcc python3-devel python3  xauth virt-install virt-viewer virt-manager libguestfs-tools-c libguestfs-tools tmux httpd-tools git x3270-x11 nc net-tools
+```
+
+
 ## Ensure you have enough space in root partition
 
 ```
@@ -82,9 +88,9 @@ yum update libgcrypt
 ```
 (because https://bugzilla.redhat.com/show_bug.cgi?id=1925029)
 
+
+
 ```
-dnf -y module install virt
-dnf -y install zip podman buildah skopeo libvirt*  bind-utils wget tar gcc python3-devel python3  xauth virt-install virt-viewer virt-manager libguestfs-tools-c libguestfs-tools tmux httpd-tools git x3270-x11 nc net-tools
 systemctl start libvirtd.service
 systemctl enable libvirtd
 ```
