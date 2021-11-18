@@ -6,20 +6,20 @@ Dell PowerEdge R440, Xeon(R) Silver 4114 CPU @ 2.20GHz, 20 cores, 128GB Ram, 4-2
 
 
 ```
-ssh mchisinevski@vb1237.mydomain.com
+ssh user@vb1237.mydomain.com
 ```
 
 
 ```
-[root@vb1237 mchisinevski]# cat /etc/centos-release
+[root@vb1237 user]# cat /etc/centos-release
 CentOS Linux release 8.2.2004 (Core)
 ```
 
 ## Ensure you have enough space in root partition
 
 ```
-[mchisinevski@vb1237 ~]$ cd /
-[mchisinevski@vb1237 /]$ exec sudo su
+[user@vb1237 ~]$ cd /
+[user@vb1237 /]$ exec sudo su
 [root@vb1237 /]# fuser -kim  /dev/cl_vb1237/home
 [root@vb1237 /]# umount -f /dev/cl_vb1237/home
 [root@vb1237 /]# lvremove /dev/cl_vb1237/home
@@ -87,7 +87,7 @@ systemctl enable libvirtd
 
 ```
 systemctl status libvirtd
-[root@vb1237 mchisinevski]# systemctl status libvirtd
+[root@vb1237 user]# systemctl status libvirtd
 ● libvirtd.service - Virtualization daemon
    Loaded: loaded (/usr/lib/systemd/system/libvirtd.service; enabled; vendor preset: enabled)
    Active: active (running) since Thu 2021-11-18 10:25:52 PST; 2s ago
@@ -123,7 +123,7 @@ sed -i '/^nameserver/i nameserver 127.0.0.1' /etc/resolv.conf
 systemctl restart dnsmasq
 systemctl enable dnsmasq
 
-[root@vb1237 mchisinevski]# systemctl status  dnsmasq
+[root@vb1237 user]# systemctl status  dnsmasq
 ● dnsmasq.service - DNS caching server.
    Loaded: loaded (/usr/lib/systemd/system/dnsmasq.service; enabled; vendor preset: disabled)
    Active: active (running) since Thu 2021-11-18 10:27:01 PST; 2s ago
