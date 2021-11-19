@@ -2,6 +2,7 @@
 # Install OpenShift 4 on libvirt
 
 
+# Libvirt host
 Dell PowerEdge R440, Xeon(R) Silver 4114 CPU @ 2.20GHz, 20 cores, 128GB Ram, 4-2TB disks
 
 
@@ -15,13 +16,16 @@ ssh user@vb1237.mydomain.com
 CentOS Linux release 8.2.2004 (Core)
 ```
 
+# Update
+
 ```
 dnf update -y
 ```
 
+# Install modules and packages 
 ```
 dnf -y module install virt
-dnf -y install zip podman buildah skopeo libvirt*  bind-utils wget tar gcc python3-devel python3  xauth virt-install virt-viewer virt-manager libguestfs-tools-c libguestfs-tools tmux httpd-tools git x3270-x11 nc net-tools
+dnf -y install haproxy zip podman buildah skopeo libvirt*  bind-utils wget tar gcc python3-devel python3  xauth virt-install virt-viewer virt-manager libguestfs-tools-c libguestfs-tools tmux httpd-tools git x3270-x11 nc net-tools
 ```
 
 
@@ -33,26 +37,21 @@ dnf -y install zip podman buildah skopeo libvirt*  bind-utils wget tar gcc pytho
 [root@vb1237 /]# fuser -kim  /dev/cl_vb1237/home
 [root@vb1237 /]# umount -f /dev/cl_vb1237/home
 [root@vb1237 /]# lvremove /dev/cl_vb1237/home
-Do you really want to remove active logical volume cl_vb1237/home? [y/n]: y
-  Logical volume "home" successfully removed
 
-  [root@vb1237 /]# lvextend -An -l +100%FREE -r /dev/cl_vb1237/root
-    Size of logical volume cl_vb1237/root changed from 50.00 GiB (12800 extents) to 1.81 TiB (475651 extents).
-    WARNING: This metadata update is NOT backed up.
-    Logical volume cl_vb1237/root successfully resized.
-  meta-data=/dev/mapper/cl_vb1237-root isize=512    agcount=4, agsize=3276800 blks
-           =                       sectsz=512   attr=2, projid32bit=1
-           =                       crc=1        finobt=1, sparse=1, rmapbt=0
-           =                       reflink=1
-  data     =                       bsize=4096   blocks=13107200, imaxpct=25
-           =                       sunit=0      swidth=0 blks
-  naming   =version 2              bsize=4096   ascii-ci=0, ftype=1
-  log      =internal log           bsize=4096   blocks=6400, version=2
-           =                       sectsz=512   sunit=0 blks, lazy-count=1
-  realtime =none                   extsz=4096   blocks=0, rtextents=0
-  data blocks changed from 13107200 to 487066624
+Do you really want to remove active logical volume cl_vb1237/home? [y/n]: y
+Logical volume "home" successfully removed
+```
+ 
+```
+[root@vb1237 /]# lvextend -An -l +100%FREE -r /dev/cl_vb1237/root
+Size of logical volume cl_vb1237/root changed from 50.00 GiB (12800 extents) to 1.81 TiB (475651 extents).
+Logical volume cl_vb1237/root successfully resized.
+meta-data=/dev/mapper/cl_vb1237-root isize=512    agcount=4, agsize=3276800 blks
+....
+data blocks changed from 13107200 to 487066624
 ```
 
+# Disable IPv6
 
 Append below lines in /etc/sysctl.conf:
 
@@ -65,10 +64,12 @@ net.ipv6.conf.default.disable_ipv6 = 1
 sysctl -p
 ```
 
+# Use AddressFamily inet
+
 Add the AddressFamily line to sshd_config :
 
 ```
-# vi /etc/ssh/sshd_config
+vi /etc/ssh/sshd_config
 ....
 AddressFamily inet
 ....
@@ -81,7 +82,9 @@ Restart sshd for changes to get effect :
 systemctl restart sshd
 ```
 
+# OpenShift pull secret
 Copy the pull secret from https://cloud.redhat.com/openshift/install/pull-secret to /root/pull-secret
+
 
 ```
 yum update libgcrypt
@@ -89,7 +92,7 @@ yum update libgcrypt
 (because https://bugzilla.redhat.com/show_bug.cgi?id=1925029)
 
 
-
+# Libvirtd
 ```
 systemctl start libvirtd.service
 systemctl enable libvirtd
@@ -123,6 +126,8 @@ Nov 18 10:25:54 vb1237.mydomain.com dnsmasq[33341]: read /var/lib/libvirt/dnsmas
 Nov 18 10:25:54 vb1237.mydomain.com dnsmasq-dhcp[33341]: read /var/lib/libvirt/dnsmasq/default.hostsfile
 ```
 
+# Dnsmasq
+
 As root, setup a separate dnsmasq server on the host:
 
 ```
@@ -133,8 +138,8 @@ sed -i '/^nameserver/i nameserver 127.0.0.1' /etc/resolv.conf
 systemctl restart dnsmasq
 systemctl enable dnsmasq
 
-[root@vb1237 user]# systemctl status  dnsmasq
-● dnsmasq.service - DNS caching server.
+systemctl status  dnsmasq
+   dnsmasq.service - DNS caching server.
    Loaded: loaded (/usr/lib/systemd/system/dnsmasq.service; enabled; vendor preset: disabled)
    Active: active (running) since Thu 2021-11-18 10:27:01 PST; 2s ago
  Main PID: 33481 (dnsmasq)
@@ -160,6 +165,8 @@ git clone https://github.com/kxr/ocp4_setup_upi_kvm.git
 cd ocp4_setup_upi_kvm/
 ```
 
+# Use separate dnsmasq (not NetworkManager's)
+
 ```
 [root@vb1237 ocp4_setup_upi_kvm]# vim .defaults.sh
 ```
@@ -170,18 +177,24 @@ Set
 export DNS_DIR="/etc/dnsmasq.d"
 ```
 
+# Adjust defaults
+
 Adjust defaults as needed (no of master, no of workers, CPU, mem)
 
 
-```
-[root@vb1237 ocp4_setup_upi_kvm]# systemctl stop NetworkManager
-[root@vb1237 ocp4_setup_upi_kvm]# systemctl disable NetworkManager
 
+```
+systemctl stop NetworkManager
+systemctl disable NetworkManager
+```
+
+```
 cat /etc/resolv.conf
 nameserver 127.0.0.1
 nameserver 8.8.8.8
 ```
 
+# Add sleep 10 
 
 vim ./.install_scripts/create_nodes.sh
 add sleep 10:
@@ -197,6 +210,8 @@ sleep 10
 
 echo -n "====> Configuring haproxy in LB VM: "
 ```
+
+# Start the OpenShift install
 
 ```
 ./ocp4_setup_upi_kvm.sh --ocp-version 4.7.stable -y
@@ -221,8 +236,12 @@ INFO Time elapsed: 0s
 
 # Expose the cluster outside the host via HAProxy
 
+
+
+## Generate the HAProxy config
 ```
 [root@vb1238 ocp4_cluster_ocp4]# cd /root/ocp4_cluster_ocp4/
+
 [root@vb1238 ocp4_cluster_ocp4]# ./expose_cluster.sh --method haproxy
 
 ######################
@@ -258,13 +277,14 @@ INFO Time elapsed: 0s
         <IP-of-this-host> api.ocp4.local console-openshift-console.apps.ocp4.local oauth-openshift.apps.ocp4.local
 ```        
 
+## Apply the HAProxy config
 
 ```
 [root@vb1238 ocp4_cluster_ocp4]#  mv '/tmp/haproxy-x15l.cfg' '/etc/haproxy/haproxy.cfg'
 mv: overwrite '/etc/haproxy/haproxy.cfg'? y
 [root@vb1238 ocp4_cluster_ocp4]# systemctl restart haproxy
 [root@vb1238 ocp4_cluster_ocp4]# systemctl status  haproxy
-● haproxy.service - HAProxy Load Balancer
+   haproxy.service - HAProxy Load Balancer
    Loaded: loaded (/usr/lib/systemd/system/haproxy.service; disabled; vendor preset: disabled)
    Active: active (running) since Thu 2021-11-18 16:26:44 PST; 4s ago
   Process: 154123 ExecStartPre=/usr/sbin/haproxy -f $CONFIG -c -q $OPTIONS (code=exited, status=0/SUCCESS)
@@ -306,3 +326,23 @@ From your laptop, you can now browse to the OpenShift console:
 
 
 ![Console](images/console.png)
+
+
+
+# OpenShift Container Storage
+
+Variations from the OCS setup at https://github.com/marcredhat/ocs.git:
+
+```
+1) mount each additional SSD to /disk1, /disk2, /disk3
+2) created 500GB /disk[1-3]/disk[1-5].img volumes and attached to kvm domains using virtio on vd[b-d] and the --config option, then sequentially restarted domains to verify the drives mount
+3) for the libvirt version with CentOS 8.2 and the virtio drives, provided the paths for the local storage operator as:
+     devicePaths:
+        - /dev/disk/by-path/pci-0000:07:00.0
+        - /dev/disk/by-path/pci-0000:08:00.0
+        - /dev/disk/by-path/pci-0000:09:00.0
+Ended up using the operator for OCS and then manually scaling the sets. With drives on 5 (not a multiple of 3) the sets got propagated out in a suboptimal way and did not get fully utilized.
+```
+
+# Cloudera Datalake cluster
+The Cloudera Datalake cluster can also be installed on libvirt (for testing) and is fully automated via Ansible.
