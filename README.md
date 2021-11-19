@@ -257,3 +257,24 @@ INFO Time elapsed: 0s
 
         <IP-of-this-host> api.ocp4.local console-openshift-console.apps.ocp4.local oauth-openshift.apps.ocp4.local
 ```        
+
+
+```
+[root@vb1238 ocp4_cluster_ocp4]#  mv '/tmp/haproxy-x15l.cfg' '/etc/haproxy/haproxy.cfg'
+mv: overwrite '/etc/haproxy/haproxy.cfg'? y
+[root@vb1238 ocp4_cluster_ocp4]# systemctl restart haproxy
+[root@vb1238 ocp4_cluster_ocp4]# systemctl status  haproxy
+● haproxy.service - HAProxy Load Balancer
+   Loaded: loaded (/usr/lib/systemd/system/haproxy.service; disabled; vendor preset: disabled)
+   Active: active (running) since Thu 2021-11-18 16:26:44 PST; 4s ago
+  Process: 154123 ExecStartPre=/usr/sbin/haproxy -f $CONFIG -c -q $OPTIONS (code=exited, status=0/SUCCESS)
+ Main PID: 154127 (haproxy)
+    Tasks: 2 (limit: 820844)
+   Memory: 3.1M
+   CGroup: /system.slice/haproxy.service
+           ├─154127 /usr/sbin/haproxy -Ws -f /etc/haproxy/haproxy.cfg -p /run/haproxy.pid
+           └─154129 /usr/sbin/haproxy -Ws -f /etc/haproxy/haproxy.cfg -p /run/haproxy.pid
+
+Nov 18 16:26:44 vb1238.halxg.cloudera.com systemd[1]: Starting HAProxy Load Balancer...
+Nov 18 16:26:44 vb1238.halxg.cloudera.com systemd[1]: Started HAProxy Load Balancer.
+```
