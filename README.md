@@ -218,3 +218,42 @@ INFO Login to the console with user: "kubeadmin", and password: "RXtvq-DNWX4-kFZ
 INFO Time elapsed: 0s
 [root@vb1238 ocp4_setup_upi_kvm]#
 ```
+
+# Expose the cluster outside the host via HAProxy
+
+```
+[root@vb1238 ocp4_cluster_ocp4]# cd /root/ocp4_cluster_ocp4/
+[root@vb1238 ocp4_cluster_ocp4]# ./expose_cluster.sh --method haproxy
+
+######################
+### HAPROXY CONFIG ###
+######################
+
+# haproxy configuration has been saved to: /tmp/haproxy-z6uz.cfg Please review it before applying
+# To apply, simply move this config to haproxy. e.g:
+
+      mv '/tmp/haproxy-z6uz.cfg' '/etc/haproxy/haproxy.cfg'
+
+# haproxy can be used to front multiple clusters. If that is the case,
+# you only need to merge the 'use_backend' lines and the 'backend' blocks from this confiugration in haproxy.cfg
+
+# You will also need to open the ports (80,443 and 6443) e.g:
+
+      firewall-cmd --add-service=http
+      firewall-cmd --add-service=https
+      firewall-cmd --add-port=6443/tcp
+      firewall-cmd --runtime-to-permanent
+
+# If SELinux is in Enforcing mode, you need to tell it to treat port 6443 as a webport, e.g:
+
+      semanage port -a -t http_port_t -p tcp 6443
+
+
+
+
+[NOTE]: When accessing this cluster from outside make sure that cluster FQDNs resolve from outside
+
+        For basic api/console access, the following /etc/hosts entry should work:
+
+        <IP-of-this-host> api.ocp4.local console-openshift-console.apps.ocp4.local oauth-openshift.apps.ocp4.local
+```        
