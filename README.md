@@ -285,6 +285,11 @@ On your laptop, add the following to /etc/hosts:
 <IP-of-libvirt-host> api.ocp4.local console-openshift-console.apps.ocp4.local oauth-openshift.apps.ocp4.local
 ```
 
+```
+cp /root/ocp4_cluster_ocp4/oc /usr/bin
+export KUBECONFIG=/root/ocp4_cluster_ocp4/install_dir/auth/kubeconfig
+oc get nodes
+```
 
 From your laptop, you can now browse to the OpenShift console:
 
