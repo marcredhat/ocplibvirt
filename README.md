@@ -177,7 +177,7 @@ Set
 export DNS_DIR="/etc/dnsmasq.d"
 ```
 
-# Adjust defaults
+# Adjust defaults in .defaults.sh
 
 Adjust defaults as needed (no of master, no of workers, CPU, mem)
 
