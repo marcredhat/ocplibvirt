@@ -275,6 +275,14 @@ mv: overwrite '/etc/haproxy/haproxy.cfg'? y
            ├─154127 /usr/sbin/haproxy -Ws -f /etc/haproxy/haproxy.cfg -p /run/haproxy.pid
            └─154129 /usr/sbin/haproxy -Ws -f /etc/haproxy/haproxy.cfg -p /run/haproxy.pid
 
-Nov 18 16:26:44 vb1238.halxg.cloudera.com systemd[1]: Starting HAProxy Load Balancer...
-Nov 18 16:26:44 vb1238.halxg.cloudera.com systemd[1]: Started HAProxy Load Balancer.
+Nov 18 16:26:44 vb1238.mydomain.com systemd[1]: Starting HAProxy Load Balancer...
+Nov 18 16:26:44 vb1238.mydomain.com systemd[1]: Started HAProxy Load Balancer.
 ```
+
+On your laptop, add the following to /etc/hosts:
+
+```
+<IP-of-libvirt-host> api.ocp4.local console-openshift-console.apps.ocp4.local oauth-openshift.apps.ocp4.local
+```
+
+![Console](images/console.png)
