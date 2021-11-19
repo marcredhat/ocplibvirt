@@ -338,13 +338,21 @@ Variations from the OCS setup at https://github.com/marcredhat/ocs.git:
 
 ```
 1) mount each additional SSD to /disk1, /disk2, /disk3
-2) created 500GB /disk[1-3]/disk[1-5].img volumes and attached to kvm domains using virtio on vd[b-d] and the --config option, then sequentially restarted domains to verify the drives mount
-3) for the libvirt version with CentOS 8.2 and the virtio drives, provided the paths for the local storage operator as:
+
+2) created 500GB /disk[1-3]/disk[1-5].img volumes and attached to kvm domains using virtio on vd[b-d] and 
+the --config option, then sequentially restarted domains to verify the drives mount
+
+3) for the libvirt version with CentOS 8.2 and the virtio drives, 
+provided the paths for the local storage operator as:
      devicePaths:
         - /dev/disk/by-path/pci-0000:07:00.0
         - /dev/disk/by-path/pci-0000:08:00.0
         - /dev/disk/by-path/pci-0000:09:00.0
-Ended up using the operator for OCS and then manually scaling the sets. With drives on 5 (not a multiple of 3) the sets got propagated out in a suboptimal way and did not get fully utilized.
+        
+Ended up using the operator for OCS and then manually scaling the sets. 
+
+With drives on 5 (not a multiple of 3) the sets got propagated out in a suboptimal way and 
+did not get fully utilized.
 ```
 
 # Cloudera Datalake cluster
