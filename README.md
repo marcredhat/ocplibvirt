@@ -356,4 +356,4 @@ did not get fully utilized.
 ```
 
 # Cloudera Datalake cluster
-The Cloudera Datalake cluster can also be installed on libvirt (for testing) and is fully automated via Ansible.
+The Cloudera Datalake cluster can also be installed on libvirt (for testing) and fully automated via Ansible.
