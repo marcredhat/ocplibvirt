@@ -182,7 +182,39 @@ nameserver 127.0.0.1
 nameserver 8.8.8.8
 ```
 
+
+vim ./.install_scripts/create_nodes.sh
+add sleep 10:
+
+```
+echo -n "====> Resstarting libvirt and dnsmasq: "
+systemctl restart libvirtd || err "systemctl restart libvirtd failed"
+systemctl restart dnsmasq || err "systemctl $DNS_CMD $DNS_SVC"; ok
+
+echo -n "====> waiting 10 "
+sleep 10
+
+
+echo -n "====> Configuring haproxy in LB VM: "
+```
+
 ```
 ./ocp4_setup_upi_kvm.sh --ocp-version 4.7.stable -y
 ```
 
+
+```
+######################################################
+#### OPENSHIFT 4 INSTALLATION FINISHED SUCCESSFULLY###
+######################################################
+          time taken = 72 minutes
+
+INFO Waiting up to 40m0s for the cluster at https://api.ocp4.local:6443 to initialize...
+INFO Waiting up to 10m0s for the openshift-console route to be created...
+INFO Install complete!
+INFO To access the cluster as the system:admin user when using 'oc', run 'export KUBECONFIG=/root/ocp4_cluster_ocp4/install_dir/auth/kubeconfig'
+INFO Access the OpenShift web-console here: https://console-openshift-console.apps.ocp4.local
+INFO Login to the console with user: "kubeadmin", and password: "RXtvq-DNWX4-kFZnN-Dsuqh"
+INFO Time elapsed: 0s
+[root@vb1238 ocp4_setup_upi_kvm]#
+```
