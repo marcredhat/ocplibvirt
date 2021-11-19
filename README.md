@@ -196,7 +196,10 @@ nameserver 8.8.8.8
 
 # Add sleep 10 
 
+```
 vim ./.install_scripts/create_nodes.sh
+```
+
 add sleep 10:
 
 ```
