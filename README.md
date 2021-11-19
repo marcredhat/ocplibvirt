@@ -291,6 +291,17 @@ export KUBECONFIG=/root/ocp4_cluster_ocp4/install_dir/auth/kubeconfig
 oc get nodes
 ```
 
+
+```
+[root@vb1238 ~]# oc get nodes
+NAME                  STATUS   ROLES           AGE     VERSION
+master-1.ocp4.local   Ready    master,worker   3h30m   v1.20.0+bbbc079
+master-2.ocp4.local   Ready    master,worker   3h30m   v1.20.0+bbbc079
+master-3.ocp4.local   Ready    master,worker   3h30m   v1.20.0+bbbc079
+worker-1.ocp4.local   Ready    worker          3h7m    v1.20.0+bbbc079
+worker-2.ocp4.local   Ready    worker          3h7m    v1.20.0+bbbc079
+```
+
 From your laptop, you can now browse to the OpenShift console:
 
 
