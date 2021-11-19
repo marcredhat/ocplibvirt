@@ -285,4 +285,8 @@ On your laptop, add the following to /etc/hosts:
 <IP-of-libvirt-host> api.ocp4.local console-openshift-console.apps.ocp4.local oauth-openshift.apps.ocp4.local
 ```
 
+
+From your laptop, you can now browse to the OpenShift console:
+
+
 ![Console](images/console.png)
