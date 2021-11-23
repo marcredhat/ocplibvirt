@@ -1,5 +1,5 @@
 
-# Install OpenShift 4 on libvirt
+# Step-by-step SELinux / Security Profiles Operator demo on OpenShift 4
 
 
 # Libvirt host
