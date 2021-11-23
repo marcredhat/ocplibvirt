@@ -442,6 +442,52 @@ NAME                         USAGE                                        STATE
 test-recording-hello-app-0   test-recording-hello-app-0_default.process   InProgress
 ```
 
+# Check how Security Profiles Operator creates SELinux policies by extracting the AVCs from the audit log
+
+```
+If you tell the Security Profiles Operator to record the SELinux policy, 
+it will tail the audit log, 
+extract the AVC and 
+create a policy based on that.
+```
+
+Get the OpenShift node where the app is running 
+
+```
+oc get pods -o wide
+NAME                    READY   STATUS    RESTARTS   AGE   IP            NODE                  NOMINATED NODE   READINESS GATES
+marc-66d658c675-cpc89   1/1     Running   0          14m   10.130.0.89   master-3.ocp4.local   <none>           <none>
+```
+
+
+```
+ssh -i /root/ocp4_cluster_ocp4/sshkey core@master-3.ocp4.local
+sudo su
+```
+
+# Check AVCs from the audit log
+
+```
+[root@master-3 core]# cat  /var/log/audit/audit.log | grep hello
+type=AVC msg=audit(1637625427.703:508): avc:  denied  { node_bind } for  pid=3598970 comm="hello-app" saddr=::1 scontext=system_u:system_r:selinuxrecording.process:s0:c123,c456 tcontext=system_u:object_r:node_t:s0 tclass=tcp_socket permissive=1
+type=SYSCALL msg=audit(1637625427.703:508): arch=c000003e syscall=49 success=yes exit=0 a0=3 a1=c42005015c a2=1c a3=0 items=0 ppid=3598958 pid=3598970 auid=4294967295 uid=1000 gid=0 euid=1000 suid=1000 fsuid=1000 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="hello-app" exe="/hello-app" subj=system_u:system_r:selinuxrecording.process:s0:c123,c456 key=(null)ARCH=x86_64 SYSCALL=bind AUID="unset" UID="core" GID="root" EUID="core" SUID="core" FSUID="core" EGID="root" SGID="root" FSGID="root"
+type=PROCTITLE msg=audit(1637625427.703:508): proctitle="./hello-app"
+type=AVC msg=audit(1637625427.706:509): avc:  denied  { name_bind } for  pid=3598970 comm="hello-app" src=8080 scontext=system_u:system_r:selinuxrecording.process:s0:c123,c456 tcontext=system_u:object_r:http_cache_port_t:s0 tclass=tcp_socket permissive=1
+type=SYSCALL msg=audit(1637625427.706:509): arch=c000003e syscall=49 success=yes exit=0 a0=3 a1=c42005035c a2=1c a3=0 items=0 ppid=3598958 pid=3598970 auid=4294967295 uid=1000 gid=0 euid=1000 suid=1000 fsuid=1000 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="hello-app" exe="/hello-app" subj=system_u:system_r:selinuxrecording.process:s0:c123,c456 key=(null)ARCH=x86_64 SYSCALL=bind AUID="unset" UID="core" GID="root" EUID="core" SUID="core" FSUID="core" EGID="root" SGID="root" FSGID="root"
+type=PROCTITLE msg=audit(1637625427.706:509): proctitle="./hello-app"
+type=AVC msg=audit(1637625427.706:510): avc:  denied  { listen } for  pid=3598970 comm="hello-app" lport=8080 scontext=system_u:system_r:selinuxrecording.process:s0:c123,c456 tcontext=system_u:system_r:selinuxrecording.process:s0:c123,c456 tclass=tcp_socket permissive=1
+type=SYSCALL msg=audit(1637625427.706:510): arch=c000003e syscall=50 success=yes exit=0 a0=3 a1=80 a2=0 a3=0 items=0 ppid=3598958 pid=3598970 auid=4294967295 uid=1000 gid=0 euid=1000 suid=1000 fsuid=1000 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="hello-app" exe="/hello-app" subj=system_u:system_r:selinuxrecording.process:s0:c123,c456 key=(null)ARCH=x86_64 SYSCALL=listen AUID="unset" UID="core" GID="root" EUID="core" SUID="core" FSUID="core" EGID="root" SGID="root" FSGID="root"
+type=PROCTITLE msg=audit(1637625427.706:510): proctitle="./hello-app"
+type=AVC msg=audit(1637626063.299:515): avc:  denied  { node_bind } for  pid=3606119 comm="hello-app" saddr=::1 scontext=system_u:system_r:selinuxrecording.process:s0:c273,c750 tcontext=system_u:object_r:node_t:s0 tclass=tcp_socket permissive=1
+type=SYSCALL msg=audit(1637626063.299:515): arch=c000003e syscall=49 success=yes exit=0 a0=3 a1=c42005015c a2=1c a3=0 items=0 ppid=3606107 pid=3606119 auid=4294967295 uid=1000 gid=0 euid=1000 suid=1000 fsuid=1000 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="hello-app" exe="/hello-app" subj=system_u:system_r:selinuxrecording.process:s0:c273,c750 key=(null)ARCH=x86_64 SYSCALL=bind AUID="unset" UID="core" GID="root" EUID="core" SUID="core" FSUID="core" EGID="root" SGID="root" FSGID="root"
+type=PROCTITLE msg=audit(1637626063.299:515): proctitle="./hello-app"
+type=AVC msg=audit(1637626063.302:516): avc:  denied  { name_bind } for  pid=3606119 comm="hello-app" src=8080 scontext=system_u:system_r:selinuxrecording.process:s0:c273,c750 tcontext=system_u:object_r:http_cache_port_t:s0 tclass=tcp_socket permissive=1
+type=SYSCALL msg=audit(1637626063.302:516): arch=c000003e syscall=49 success=yes exit=0 a0=3 a1=c42005035c a2=1c a3=0 items=0 ppid=3606107 pid=3606119 auid=4294967295 uid=1000 gid=0 euid=1000 suid=1000 fsuid=1000 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="hello-app" exe="/hello-app" subj=system_u:system_r:selinuxrecording.process:s0:c273,c750 key=(null)ARCH=x86_64 SYSCALL=bind AUID="unset" UID="core" GID="root" EUID="core" SUID="core" FSUID="core" EGID="root" SGID="root" FSGID="root"
+type=PROCTITLE msg=audit(1637626063.302:516): proctitle="./hello-app"
+type=AVC msg=audit(1637626063.302:517): avc:  denied  { listen } for  pid=3606119 comm="hello-app" lport=8080 scontext=system_u:system_r:selinuxrecording.process:s0:c273,c750 tcontext=system_u:system_r:selinuxrecording.process:s0:c273,c750 tclass=tcp_socket permissive=1
+type=SYSCALL msg=audit(1637626063.302:517): arch=c000003e syscall=50 success=yes exit=0 a0=3 a1=80 a2=0 a3=0 items=0 ppid=3606107 pid=3606119 auid=4294967295 uid=1000 gid=0 euid=1000 suid=1000 fsuid=1000 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="hello-app" exe="/hello-app" subj=system_u:system_r:selinuxrecording.process:s0:c273,c750 key=(null)ARCH=x86_64 SYSCALL=listen AUID="unset" UID="core" GID="root" EUID="core" SUID="core" FSUID="core" EGID="root" SGID="root" FSGID="root"
+type=PROCTITLE msg=audit(1637626063.302:517): proctitle="./hello-app"
+```
 
 # Check the generated SELinux policy
 
