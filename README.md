@@ -357,3 +357,173 @@ did not get fully utilized.
 
 # Cloudera Datalake cluster
 The Cloudera Datalake cluster can also be installed on libvirt (for testing) and fully automated via Ansible.
+
+
+
+# Install Security Profiles Operator
+The operator container image consists of an image manifest which supports the architectures amd64 and arm64 for now. 
+To deploy the operator, first install cert-manager via kubectl:
+
+```
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.0/cert-manager.yaml
+kubectl --namespace cert-manager wait --for condition=ready pod -l app.kubernetes.io/instance=cert-manager
+```
+
+Then apply the operator manifest:
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/security-profiles-operator/master/deploy/operator.yaml
+```
+
+# Set verbosity, enableLogEnricher and enableSelinux
+
+```
+kubectl -n security-profiles-operator patch spod/spod --type=merge -p '{"spec":{"verbosity":1}}
+kubectl -n security-profiles-operator patch spod/spod --type=merge -p '{"spec":{"enableLogEnricher": true, "enableSelinux": true}}'
+```
+
+
+## Check that enableLogEnricher and enableSelinux are set to "true"
+
+```
+oc get spod -n security-profiles-operator -oyaml | grep enable
+    enableLogEnricher: true
+    enableSelinux: true
+```
+
+# Create a test Deployment
+
+```
+oc create -f https://raw.githubusercontent.com/marcredhat/rke2selinux/main/marcdeploy.yaml
+```
+
+# Check the Deployment's labels
+
+```
+oc get deploy marc --show-labels
+NAME   READY   UP-TO-DATE   AVAILABLE   AGE     LABELS
+marc   1/1     1            1           4m55s   app=marc
+```
+
+# Create ProfileRecording using the Deployment's label
+
+```
+apiVersion: security-profiles-operator.x-k8s.io/v1alpha1
+kind: ProfileRecording
+metadata:
+  name: test-recording
+spec:
+  kind: SelinuxProfile
+  recorder: logs
+  podSelector:
+    matchLabels:
+      app: marc
+```
+
+
+```
+oc get pods -o yaml | grep selinuxrecording  -B 1
+              seLinuxOptions:
+                type: selinuxrecording.process
+```
+
+
+# Delete the pods and check that the SELinuxProfile is created
+
+
+```
+oc delete pod -l app=marc
+```
+
+```
+oc get selinuxprofiles
+NAME                         USAGE                                        STATE
+test-recording-hello-app-0   test-recording-hello-app-0_default.process   InProgress
+```
+
+
+# Check the generated SELinux policy
+
+```
+oc get selinuxprofiles -oyaml | grep "policy: |" -A 4
+    policy: |
+      (blockinherit container)
+      (allow process http_cache_port_t ( tcp_socket ( name_bind )))
+      (allow process node_t ( tcp_socket ( node_bind )))
+      (allow process test-recording-hello-app-0_default.process ( tcp_socket ( listen )))
+```
+
+
+#  Install the generated SELinux policy
+
+## Get the "usage" as shown below 
+
+```
+oc get selinuxprofiles -oyaml | grep usage
+usage: test-recording-hello-app-0_default.process
+```
+
+## Edit the Deployment to use it:
+
+```
+securityContext:
+          runAsUser: 1000
+          seLinuxOptions:
+            type: test-recording-hello-app-0_default.process
+```
+
+
+## Check
+```            
+oc get deploy -oyaml | grep seLinuxOptions -A 3 | grep process
+                  type: test-recording-hello-app-0_default.process
+```
+
+
+#  Check the containers' logs
+
+```
+oc logs -l app=marc
+2021/11/23 00:07:43 Server listening on port 8080
+2021/11/23 00:12:00 Serving request: /
+```
+
+# Check the Security Profile Operator Daemon's logs
+
+```
+...
+oc logs -l name=spod --all-containers -n security-profiles-operator
+            I1122 23:38:08.773602 1747109 main.go:305] Listening securely on 0.0.0.0:9443
+            {"level":"info","ts":1637624285.648324,"caller":"daemon/daemon.go:29","msg":"Started daemon"}
+            {"level":"info","ts":1637624286.0449376,"logger":"state-server","caller":"daemon/status_server.go:183","msg":"Serving status","path":"/var/run/selinuxd/selinuxd.sock","uid":0,"gid":65535}
+            {"level":"info","ts":1637624286.0452702,"caller":"daemon/status_server.go:72","msg":"Status Server got READY signal"}
+            {"level":"info","ts":1637625439.4213052,"logger":"file-watcher","caller":"daemon/daemon.go:92","msg":"Installing policy","file":"/etc/selinux.d/test-recording-hello-app-0_default.cil"}
+            {"level":"info","ts":1637625439.4214282,"logger":"file-watcher","caller":"daemon/daemon.go:92","msg":"Installing policy","file":"/etc/selinux.d/test-recording-hello-app-0_default.cil"}
+            {"level":"info","ts":1637625470.354372,"logger":"policy-installer","caller":"daemon/daemon.go:130","msg":"The operation was successful","operation":"install - /etc/selinux.d/test-recording-hello-app-0_default.cil"}
+            {"level":"info","ts":1637625470.3556492,"logger":"policy-installer","caller":"daemon/daemon.go:130","msg":"The operation was successful","operation":"install - /etc/selinux.d/test-recording-hello-app-0_default.cil"}
+            time="2021-11-22T23:20:54Z" level=info msg="Trying to copy file /opt/spo-profiles/..data/selinuxd.cil to /var/lib/kubelet/seccomp/..data/selinuxd.cil (required: false)"
+            time="2021-11-22T23:20:54Z" level=info msg="Copied selinuxd.cil"
+...          
+```
+
+
+# Get the OpenShift node where the app is running 
+
+
+```
+oc get pods -o wide
+NAME                    READY   STATUS    RESTARTS   AGE   IP            NODE                  NOMINATED NODE   READINESS GATES
+marc-66d658c675-cpc89   1/1     Running   0          14m   10.130.0.89   master-3.ocp4.local   <none>           <none>
+```
+
+
+# On the OpenShift node, check that our app's containers run with the correct SELinux type from the recording
+
+```
+ssh -i /root/ocp4_cluster_ocp4/sshkey core@master-3.ocp4.local
+```
+
+```
+[core@master-3 ~]$ ps -efZ | grep hello-app | grep selinux
+system_u:system_r:selinuxrecording.process:s0:c273,c750 core 3606119 3606107  0 00:07 ? 00:00:00 ./hello-app
+```
+
