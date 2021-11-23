@@ -447,7 +447,7 @@ test-recording-hello-app-0   test-recording-hello-app-0_default.process   InProg
 ```
 If you tell the Security Profiles Operator to record the SELinux policy, 
 it will tail the audit log, 
-extract the AVC and 
+extract the AVCs and 
 create a policy based on that.
 ```
 
