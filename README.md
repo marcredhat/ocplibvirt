@@ -481,7 +481,7 @@ oc get deploy -oyaml | grep seLinuxOptions -A 3 | grep process
 ```
 
 
-#  Check the containers' logs
+#  Check the Deployment's logs
 
 ```
 oc logs -l app=marc
