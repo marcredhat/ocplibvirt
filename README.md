@@ -525,6 +525,11 @@ ssh -i /root/ocp4_cluster_ocp4/sshkey core@master-3.ocp4.local
 ```
 
 ```
+[core@master-3 ~]$ ps -efZ | grep test-rec
+system_u:system_r:test-recording-hello-app-0_default.process:s0:c273,c750 root 3606078 3606067  0 00:07 ? 00:00:00 /usr/bin/pod
+```
+
+```
 [core@master-3 ~]$ ps -efZ | grep hello-app | grep selinux
 system_u:system_r:selinuxrecording.process:s0:c273,c750 core 3606119 3606107  0 00:07 ? 00:00:00 ./hello-app
 ```
