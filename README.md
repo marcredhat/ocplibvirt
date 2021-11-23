@@ -455,14 +455,14 @@ oc get selinuxprofiles -oyaml | grep "policy: |" -A 4
 
 #  Install the generated SELinux policy
 
-*Get the "usage" as shown below* 
+**Get the "usage" as shown below**
 
 ```
 oc get selinuxprofiles -oyaml | grep usage
 usage: test-recording-hello-app-0_default.process
 ```
 
-* Edit the Deployment to use it*
+**Edit the Deployment to use it**
 
 ```
 securityContext:
