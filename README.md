@@ -382,7 +382,7 @@ kubectl -n security-profiles-operator patch spod/spod --type=merge -p '{"spec":{
 ```
 
 
-## Check that enableLogEnricher and enableSelinux are set to "true"
+# Check that enableLogEnricher and enableSelinux are set to "true"
 
 ```
 oc get spod -n security-profiles-operator -oyaml | grep enable
@@ -455,14 +455,14 @@ oc get selinuxprofiles -oyaml | grep "policy: |" -A 4
 
 #  Install the generated SELinux policy
 
-## Get the "usage" as shown below 
+*Get the "usage" as shown below* 
 
 ```
 oc get selinuxprofiles -oyaml | grep usage
 usage: test-recording-hello-app-0_default.process
 ```
 
-## Edit the Deployment to use it:
+* Edit the Deployment to use it*
 
 ```
 securityContext:
@@ -472,7 +472,7 @@ securityContext:
 ```
 
 
-## Check
+# Check the Deployment's SELinux type
 ```            
 oc get deploy -oyaml | grep seLinuxOptions -A 3 | grep process
                   type: test-recording-hello-app-0_default.process
