@@ -1,5 +1,5 @@
 
-# Step-by-step SELinux / Security Profiles Operator demo on OpenShift 4
+# Step-by-step SELinux and Security Profiles Operator demo on OpenShift 4
 
 
 # Libvirt host
