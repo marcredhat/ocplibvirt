@@ -420,10 +420,12 @@ spec:
 ```
 
 
+# Check that the Deployment's pods get "type: selinuxrecording.process"
+
 ```
-oc get pods -o yaml | grep selinuxrecording  -B 1
-              seLinuxOptions:
-                type: selinuxrecording.process
+oc get pods -l app=marc  -o yaml | grep selinuxrecording  -B 1
+        seLinuxOptions:
+          type: selinuxrecording.process
 ```
 
 
@@ -462,7 +464,7 @@ oc get selinuxprofiles -oyaml | grep usage
 usage: test-recording-hello-app-0_default.process
 ```
 
-**Edit the Deployment to use it**
+**Edit the Deployment to use the generated SELinux policy**
 
 ```
 securityContext:
