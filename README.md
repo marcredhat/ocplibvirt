@@ -377,7 +377,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/security-prof
 # Set verbosity, enableLogEnricher and enableSelinux
 
 ```
-kubectl -n security-profiles-operator patch spod/spod --type=merge -p '{"spec":{"verbosity":1}}
+kubectl -n security-profiles-operator patch spod/spod --type=merge -p '{"spec":{"verbosity":1}}'
 kubectl -n security-profiles-operator patch spod/spod --type=merge -p '{"spec":{"enableLogEnricher": true, "enableSelinux": true}}'
 ```
 
